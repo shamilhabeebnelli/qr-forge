@@ -21,7 +21,6 @@
         <button data-mode="wifi">WiFi</button>
         <button data-mode="whatsapp">WhatsApp</button>
         <button data-mode="upi">UPI Payment</button>
-        <button data-mode="barcode">Barcode</button>
       </nav>
 
       <div class="mode-fields" data-mode="text">
@@ -62,21 +61,6 @@
         <p style="color:#e8b339;font-size:0.8rem;margin:-4px 0 10px;line-height:1.4">
           QR Forge only encodes what you type. Always verify the payee name shown in your
           payment app before paying a scanned code.
-        </p>
-      </div>
-
-      <div class="mode-fields hidden" data-mode="barcode">
-        <div class="row">
-          <label>Format
-            <select id="barcode-format">
-              <option value="code128" selected>Code 128 (text and numbers)</option>
-              <option value="ean13">EAN-13 (product code, 12-13 digits)</option>
-            </select>
-          </label>
-          <label>Value <input id="barcode-value" type="text" placeholder="ABC-12345 or 590123412345" /></label>
-        </div>
-        <p style="color:#8b94ab;font-size:0.8rem;margin:-4px 0 10px;line-height:1.4">
-          EAN-13: enter 12 digits and the check digit is added, or all 13 and it is validated.
         </p>
       </div>
 
