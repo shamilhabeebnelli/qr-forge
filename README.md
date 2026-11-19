@@ -1,4 +1,4 @@
-# QR Forge
+# qrcodegenerator
 
 Fast, private QR code generator that runs **entirely in the browser**. The QR
 engine is written in Rust, compiled to WebAssembly, and wrapped in a small
@@ -14,7 +14,7 @@ static site. Nothing you type ever leaves your device.
 - **WhatsApp** click-to-chat QR codes (`wa.me` links with a prefilled message)
 - **UPI payment** QR codes with payee name, amount in INR and a note
 - Error correction level (L/M/Q/H), custom colors and quiet-zone control
-- Export as **PNG** (512/1024/2048 px), **SVG**, or copy to clipboard
+- Save as photo (**PNG** 512/1024/2048 px) or **SVG**, save as **PDF**, **print**, **share** to other apps, or copy to clipboard
 - Fully client-side: works offline once loaded, no accounts, no tracking
 
 ## Tech stack
