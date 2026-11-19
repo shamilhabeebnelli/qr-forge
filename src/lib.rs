@@ -1,4 +1,4 @@
-//! QR Forge core: payload builders and QR rendering.
+//! qrcodegenerator core: payload builders and QR rendering.
 //!
 //! Everything runs client-side. The `*_core` functions are pure Rust and
 //! unit-tested natively; thin wrappers expose them to JavaScript through
