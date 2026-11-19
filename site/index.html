@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QR Forge - fast, private QR codes</title>
+  <meta name="description" content="Free QR code generator that runs entirely in your browser. Built with Rust and WebAssembly. Text, links, WiFi, WhatsApp and UPI payment QR codes." />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1><span class="mark" aria-hidden="true">&#9619;</span> QR Forge</h1>
+    <p class="tagline">Instant QR codes, forged in your browser. No uploads, no tracking - everything runs on your device with Rust + WebAssembly.</p>
+  </header>
+
+  <main>
+    <section class="panel form-panel" aria-label="QR content">
+      <nav class="tabs" id="tabs">
+        <button data-mode="text" class="active">Text / Link</button>
+        <button data-mode="wifi">WiFi</button>
+        <button data-mode="whatsapp">WhatsApp</button>
+        <button data-mode="upi">UPI Payment</button>
+      </nav>
+
+      <div class="mode-fields" data-mode="text">
+        <label>Text or link
+          <textarea id="text-content" rows="4" placeholder="https://denelli.in">https://denelli.in</textarea>
+        </label>
+      </div>
+
+      <div class="mode-fields hidden" data-mode="wifi">
+        <label>Network name (SSID) <input id="wifi-ssid" type="text" placeholder="My Home WiFi" /></label>
+        <label>Password <input id="wifi-password" type="text" placeholder="leave empty for open network" /></label>
+        <div class="row">
+          <label>Security
+            <select id="wifi-security">
+              <option value="WPA" selected>WPA / WPA2 / WPA3</option>
+              <option value="WEP">WEP</option>
+              <option value="nopass">Open (no password)</option>
+            </select>
+          </label>
+          <label class="check"><input id="wifi-hidden" type="checkbox" /> Hidden network</label>
+        </div>
+      </div>
+
+      <div class="mode-fields hidden" data-mode="whatsapp">
+        <label>Phone with country code <input id="wa-phone" type="tel" placeholder="91 98765 43210" /></label>
+        <label>Message (optional)
+          <textarea id="wa-message" rows="2" placeholder="Hi!"></textarea>
+        </label>
+      </div>
+
+      <div class="mode-fields hidden" data-mode="upi">
+        <label>UPI ID <input id="upi-vpa" type="text" placeholder="yourname@bank" /></label>
+        <label>Payee name <input id="upi-name" type="text" placeholder="Shop or person name" /></label>
+        <div class="row">
+          <label>Amount (INR, optional) <input id="upi-amount" type="text" inputmode="decimal" placeholder="199.00" /></label>
+          <label>Note (optional) <input id="upi-note" type="text" placeholder="Thanks!" /></label>
+        </div>
+      </div>
+
+      <details class="tuning">
+        <summary>Design and quality</summary>
+        <div class="row">
+          <label>Dark modules <input id="dark" type="color" value="#0b0e14" /></label>
+          <label>Background <input id="light" type="color" value="#ffffff" /></label>
+        </div>
+        <div class="row">
+          <label>Error correction
+            <select id="ecc">
+              <option value="L">L - 7%</option>
+              <option value="M" selected>M - 15%</option>
+              <option value="Q">Q - 25%</option>
+              <option value="H">H - 30%</option>
+            </select>
+          </label>
+          <label>Quiet zone <span class="range-value" id="margin-value">2</span>
+            <input id="margin" type="range" min="0" max="8" value="2" />
+          </label>
+        </div>
+      </details>
+
+      <p class="error" id="error" role="alert" hidden></p>
+    </section>
+
+    <section class="panel preview-panel" aria-label="QR preview">
+      <div class="preview" id="preview"></div>
+      <p class="payload-preview" id="payload-preview" title="Exact encoded content"></p>
+      <div class="actions">
+        <button id="download-png" class="primary">Download PNG</button>
+        <button id="download-svg">Download SVG</button>
+        <button id="copy-png">Copy</button>
+      </div>
+      <label class="export-size">PNG size
+        <select id="png-size">
+          <option value="512">512 px</option>
+          <option value="1024" selected>1024 px</option>
+          <option value="2048">2048 px</option>
+        </select>
+      </label>
+    </section>
+  </main>
+
+  <footer>
+    <p>Built with Rust compiled to WebAssembly. Open source on
+      <a href="https://github.com/shamilhabeebnelli/qr-forge">GitHub</a>.</p>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

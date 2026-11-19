@@ -1,0 +1,18 @@
+[package]
+name = "qr-forge"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Fast, private, client-side QR code generator built with Rust and WebAssembly"
+repository = "https://github.com/shamilhabeebnelli/qr-forge"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+qrcode = { version = "0.14", default-features = false, features = ["svg"] }
+wasm-bindgen = "0.2"
+
+[profile.release]
+opt-level = "s"
+lto = true
