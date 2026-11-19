@@ -4,7 +4,6 @@
 //! unit-tested natively; thin wrappers expose them to JavaScript through
 //! WebAssembly.
 
-mod barcode;
 
 use wasm_bindgen::prelude::*;
 
@@ -27,12 +26,13 @@ fn make_qr(payload: &str, level: &str) -> Result<qrcode::QrCode, String> {
         .map_err(|e| format!("could not encode QR code: {e}"))
 }
 
-/// Minimal percent-encoding for query values (RFC 3986 unreserved kept).
+/// Minimal percent-encoding for query values. Keeps RFC 3986 unreserved
+/// characters plus `@`, which UPI apps expect literally inside `pa`.
 fn url_encode(value: &str) -> String {
     let mut out = String::new();
     for byte in value.bytes() {
         match byte {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' | b'@' => {
                 out.push(byte as char)
             }
             _ => out.push_str(&format!("%{byte:02X}")),
@@ -169,15 +169,6 @@ pub fn render_matrix_core(payload: &str, level: &str) -> Result<String, String> 
 }
 
 
-/// Barcode as "modules;bits" ('1' = bar). `format` is "code128" or "ean13".
-pub fn render_barcode_core(format: &str, value: &str) -> Result<String, String> {
-    match format.trim().to_ascii_lowercase().as_str() {
-        "code128" | "128" => barcode::code128(value),
-        "ean13" | "ean-13" | "ean" => barcode::ean13(value),
-        other => Err(format!("unsupported barcode format: {other}")),
-    }
-}
-
 #[wasm_bindgen]
 pub fn payload_text(text: &str) -> String {
     payload_text_core(text)
@@ -208,12 +199,6 @@ pub fn render_matrix(payload: &str, level: &str) -> Result<String, JsError> {
     render_matrix_core(payload, level).map_err(|e| JsError::new(&e))
 }
 
-
-#[wasm_bindgen]
-pub fn render_barcode(format: &str, value: &str) -> Result<String, JsError> {
-    render_barcode_core(format, value).map_err(|e| JsError::new(&e))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -240,7 +225,7 @@ mod tests {
         let p = payload_upi_core("shop@okhdfcbank", "Nadan Store", "125.5", "Tea & snacks").unwrap();
         assert_eq!(
             p,
-            "upi://pay?pa=shop%40okhdfcbank&pn=Nadan%20Store&am=125.50&cu=INR&tn=Tea%20%26%20snacks"
+            "upi://pay?pa=shop@okhdfcbank&pn=Nadan%20Store&am=125.50&cu=INR&tn=Tea%20%26%20snacks"
         );
     }
 
@@ -284,10 +269,4 @@ mod tests {
         assert!(ec_level("Z").is_err());
     }
 
-    #[test]
-    fn barcode_core_dispatch() {
-        assert!(render_barcode_core("code128", "HELLO-123").is_ok());
-        assert!(render_barcode_core("EAN-13", "590123412345").is_ok());
-        assert!(render_barcode_core("qr", "x").is_err());
-    }
 }
