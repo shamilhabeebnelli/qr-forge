@@ -5,7 +5,6 @@ import init, {
   payload_upi,
   render_svg,
   render_matrix,
-  render_barcode,
 } from './pkg/qr_forge.js';
 
 const $ = (id) => document.getElementById(id);
@@ -41,68 +40,17 @@ function currentPayload() {
   }
 }
 
-// ---------- graphic abstraction (QR square or barcode strip) ----------
+// ---------- graphic abstraction ----------
 
 function parseBits(raw) {
   const sep = raw.indexOf(';');
   return { width: Number(raw.slice(0, sep)), bits: raw.slice(sep + 1) };
 }
 
-function parseBarcode(raw) {
-  const sep = raw.indexOf(';');
-  const sep2 = raw.lastIndexOf(';');
-  return { width: Number(raw.slice(0, sep)), bits: raw.slice(sep + 1, sep2), label: raw.slice(sep2 + 1) };
-}
-
 function currentGraphic() {
   const dark = $('dark').value;
   const light = $('light').value;
   const margin = Number($('margin').value);
-  if (mode === 'barcode') {
-    const format = $('barcode-format').value;
-    const value = $('barcode-value').value;
-    const raw = render_barcode(format, value);
-    const { width, bits, label: encodedLabel } = parseBarcode(raw);
-    const quiet = 10;
-    const barHeight = 110;
-    const labelHeight = format === 'ean13' ? 26 : 18;
-    const totalW = width + quiet * 2;
-    const totalH = barHeight + labelHeight;
-    const label = encodedLabel;
-    return {
-      caption: label,
-      svg() {
-        let rects = '';
-        for (let x = 0; x < width; x += 1) {
-          if (bits[x] === '1') {
-            rects += `<rect x="${x + quiet}" y="0" width="1" height="${barHeight}" fill="${dark}"/>`;
-          }
-        }
-        const text = label
-          ? `<text x="${totalW / 2}" y="${barHeight + labelHeight - 6}" text-anchor="middle" font-family="monospace" font-size="14" fill="${dark}">${label}</text>`
-          : '';
-        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalW} ${totalH}" width="${totalW * 3}" height="${totalH * 3}"><rect width="${totalW}" height="${totalH}" fill="${light}"/>${rects}${text}</svg>`;
-      },
-      draw(ctx, scale) {
-        ctx.fillStyle = light;
-        ctx.fillRect(0, 0, totalW * scale, totalH * scale);
-        ctx.fillStyle = dark;
-        for (let x = 0; x < width; x += 1) {
-          if (bits[x] === '1') ctx.fillRect((x + quiet) * scale, 0, scale, barHeight * scale);
-        }
-        if (label) {
-          ctx.fillStyle = dark;
-          ctx.font = `${14 * scale}px monospace`;
-          ctx.textAlign = 'center';
-          ctx.fillText(label, (totalW * scale) / 2, (barHeight + labelHeight - 6) * scale);
-        }
-        return { w: totalW * scale, h: totalH * scale };
-      },
-      aspect: totalH / totalW,
-      dims: { w: totalW, h: totalH },
-      pad: 0,
-    };
-  }
   const payload = currentPayload();
   if (!payload.trim()) throw new Error('nothing to encode yet');
   return {
@@ -149,7 +97,6 @@ function update() {
     const g = currentGraphic();
     preview.style.padding = `${g.pad * 6 + 4}px`;
     preview.style.background = $('light').value;
-    preview.style.aspectRatio = mode === 'barcode' ? 'auto' : '1';
     preview.innerHTML = g.svg();
     payloadPreview.textContent = g.caption;
     showError(null);
@@ -163,17 +110,10 @@ function renderToCanvas() {
   const px = Number($('png-size').value);
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  if (mode === 'barcode') {
-    const scale = Math.max(2, Math.round(px / g.dims.w));
-    canvas.width = g.dims.w * scale;
-    canvas.height = g.dims.h * scale;
-    g.draw(ctx, scale);
-  } else {
-    const { w } = g.draw(ctx, 0, px);
-    canvas.width = w;
-    canvas.height = w;
-    g.draw(ctx, 0, px);
-  }
+  const { w } = g.draw(ctx, 0, px);
+  canvas.width = w;
+  canvas.height = w;
+  g.draw(ctx, 0, px);
   return { canvas, caption: g.caption };
 }
 
@@ -266,14 +206,14 @@ function guard(fn) {
 
 $('download-png').addEventListener('click', guard(() => {
   const { canvas } = renderToCanvas();
-  download(canvas.toDataURL('image/png'), mode === 'barcode' ? 'barcode.png' : 'qr-forge.png');
+  download(canvas.toDataURL('image/png'), 'qr-forge.png');
 }));
 
 $('download-svg').addEventListener('click', guard(() => {
   const g = currentGraphic();
   const blob = new Blob([g.svg()], { type: 'image/svg+xml' });
   const url = URL.createObjectURL(blob);
-  download(url, mode === 'barcode' ? 'barcode.svg' : 'qr-forge.svg');
+  download(url, 'qr-forge.svg');
   URL.revokeObjectURL(url);
 }));
 
@@ -282,7 +222,7 @@ $('download-pdf').addEventListener('click', guard(async () => {
   const bytes = await canvasToPdfBytes(canvas, caption);
   const blob = new Blob([bytes], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
-  download(url, mode === 'barcode' ? 'barcode.pdf' : 'qr-forge.pdf');
+  download(url, 'qr-forge.pdf');
   URL.revokeObjectURL(url);
 }));
 
@@ -295,7 +235,7 @@ $('print-btn').addEventListener('click', guard(() => {
 $('share-btn').addEventListener('click', guard(async () => {
   const { canvas, caption } = renderToCanvas();
   const blob = await canvasBlob(canvas);
-  const file = new File([blob], mode === 'barcode' ? 'barcode.png' : 'qr-forge.png', { type: 'image/png' });
+  const file = new File([blob], 'qr-forge.png', { type: 'image/png' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     await navigator.share({ files: [file], title: 'QR Forge', text: caption.slice(0, 120) });
   } else if (navigator.clipboard && window.ClipboardItem) {
@@ -325,7 +265,6 @@ $('tabs').addEventListener('click', (event) => {
   document.querySelectorAll('.mode-fields').forEach((el) => {
     el.classList.toggle('hidden', el.dataset.mode !== mode);
   });
-  $('qr-only').classList.toggle('hidden', mode === 'barcode');
   update();
 });
 
