@@ -163,7 +163,7 @@ async function canvasToPdfBytes(canvas, caption) {
   push(zipped);
   push('\nendstream\nendobj\n');
   obj(5, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
-  obj(6, `<< /Length ${enc.encode(`q ${pageW} 0 0 ${imgH} 0 50 cm /Im0 Do Q\nBT /F1 9 Tf 20 28 Td (QR Forge) Tj ET\nBT /F1 8 Tf 20 16 Td (${safeCaption}) Tj ET\n`).length} >>\nstream\nq ${pageW} 0 0 ${imgH} 0 50 cm /Im0 Do Q\nBT /F1 9 Tf 20 28 Td (QR Forge) Tj ET\nBT /F1 8 Tf 20 16 Td (${safeCaption}) Tj ET\nendstream`);
+  obj(6, `<< /Length ${enc.encode(`q ${pageW} 0 0 ${imgH} 0 50 cm /Im0 Do Q\nBT /F1 9 Tf 20 28 Td (qrcodegenerator) Tj ET\nBT /F1 8 Tf 20 16 Td (${safeCaption}) Tj ET\n`).length} >>\nstream\nq ${pageW} 0 0 ${imgH} 0 50 cm /Im0 Do Q\nBT /F1 9 Tf 20 28 Td (qrcodegenerator) Tj ET\nBT /F1 8 Tf 20 16 Td (${safeCaption}) Tj ET\nendstream`);
 
   const xrefPos = pos;
   push(`xref\n0 7\n0000000000 65535 f \n`);
@@ -206,14 +206,14 @@ function guard(fn) {
 
 $('download-png').addEventListener('click', guard(() => {
   const { canvas } = renderToCanvas();
-  download(canvas.toDataURL('image/png'), 'qr-forge.png');
+  download(canvas.toDataURL('image/png'), 'qrcodegenerator.png');
 }));
 
 $('download-svg').addEventListener('click', guard(() => {
   const g = currentGraphic();
   const blob = new Blob([g.svg()], { type: 'image/svg+xml' });
   const url = URL.createObjectURL(blob);
-  download(url, 'qr-forge.svg');
+  download(url, 'qrcodegenerator.svg');
   URL.revokeObjectURL(url);
 }));
 
@@ -222,7 +222,7 @@ $('download-pdf').addEventListener('click', guard(async () => {
   const bytes = await canvasToPdfBytes(canvas, caption);
   const blob = new Blob([bytes], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
-  download(url, 'qr-forge.pdf');
+  download(url, 'qrcodegenerator.pdf');
   URL.revokeObjectURL(url);
 }));
 
@@ -235,9 +235,9 @@ $('print-btn').addEventListener('click', guard(() => {
 $('share-btn').addEventListener('click', guard(async () => {
   const { canvas, caption } = renderToCanvas();
   const blob = await canvasBlob(canvas);
-  const file = new File([blob], 'qr-forge.png', { type: 'image/png' });
+  const file = new File([blob], 'qrcodegenerator.png', { type: 'image/png' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    await navigator.share({ files: [file], title: 'QR Forge', text: caption.slice(0, 120) });
+    await navigator.share({ files: [file], title: 'qrcodegenerator', text: caption.slice(0, 120) });
   } else if (navigator.clipboard && window.ClipboardItem) {
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
     $('share-btn').textContent = 'Copied image!';
