@@ -48,6 +48,12 @@ function parseBits(raw) {
   return { width: Number(raw.slice(0, sep)), bits: raw.slice(sep + 1) };
 }
 
+function parseBarcode(raw) {
+  const sep = raw.indexOf(';');
+  const sep2 = raw.lastIndexOf(';');
+  return { width: Number(raw.slice(0, sep)), bits: raw.slice(sep + 1, sep2), label: raw.slice(sep2 + 1) };
+}
+
 function currentGraphic() {
   const dark = $('dark').value;
   const light = $('light').value;
@@ -56,13 +62,13 @@ function currentGraphic() {
     const format = $('barcode-format').value;
     const value = $('barcode-value').value;
     const raw = render_barcode(format, value);
-    const { width, bits } = parseBits(raw);
+    const { width, bits, label: encodedLabel } = parseBarcode(raw);
     const quiet = 10;
     const barHeight = 110;
     const labelHeight = format === 'ean13' ? 26 : 18;
     const totalW = width + quiet * 2;
     const totalH = barHeight + labelHeight;
-    const label = format === 'ean13' ? value.replace(/[\s-]/g, '') : value.trim();
+    const label = encodedLabel;
     return {
       caption: label,
       svg() {
