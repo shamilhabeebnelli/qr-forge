@@ -21,6 +21,7 @@
         <button data-mode="wifi">WiFi</button>
         <button data-mode="whatsapp">WhatsApp</button>
         <button data-mode="upi">UPI Payment</button>
+        <button data-mode="barcode">Barcode</button>
       </nav>
 
       <div class="mode-fields" data-mode="text">
@@ -64,13 +65,28 @@
         </p>
       </div>
 
+      <div class="mode-fields hidden" data-mode="barcode">
+        <div class="row">
+          <label>Format
+            <select id="barcode-format">
+              <option value="code128" selected>Code 128 (text and numbers)</option>
+              <option value="ean13">EAN-13 (product code, 12-13 digits)</option>
+            </select>
+          </label>
+          <label>Value <input id="barcode-value" type="text" placeholder="ABC-12345 or 590123412345" /></label>
+        </div>
+        <p style="color:#8b94ab;font-size:0.8rem;margin:-4px 0 10px;line-height:1.4">
+          EAN-13: enter 12 digits and the check digit is added, or all 13 and it is validated.
+        </p>
+      </div>
+
       <details class="tuning">
         <summary>Design and quality</summary>
         <div class="row">
           <label>Dark modules <input id="dark" type="color" value="#0b0e14" /></label>
           <label>Background <input id="light" type="color" value="#ffffff" /></label>
         </div>
-        <div class="row">
+        <div class="row" id="qr-only">
           <label>Error correction
             <select id="ecc">
               <option value="L">L - 7%</option>
@@ -92,8 +108,11 @@
       <div class="preview" id="preview"></div>
       <p class="payload-preview" id="payload-preview" title="Exact encoded content"></p>
       <div class="actions">
-        <button id="download-png" class="primary">Download PNG</button>
-        <button id="download-svg">Download SVG</button>
+        <button id="download-png" class="primary">Save PNG</button>
+        <button id="download-pdf">Save PDF</button>
+        <button id="print-btn">Print</button>
+        <button id="share-btn">Share</button>
+        <button id="download-svg">Save SVG</button>
         <button id="copy-png">Copy</button>
       </div>
       <label class="export-size">PNG size
@@ -105,6 +124,8 @@
       </label>
     </section>
   </main>
+
+  <div id="print-area" aria-hidden="true"></div>
 
   <footer>
     <p>Built with Rust compiled to WebAssembly. Open source on
