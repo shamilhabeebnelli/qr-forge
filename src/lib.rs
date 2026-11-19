@@ -4,6 +4,8 @@
 //! unit-tested natively; thin wrappers expose them to JavaScript through
 //! WebAssembly.
 
+mod barcode;
+
 use wasm_bindgen::prelude::*;
 
 fn ec_level(level: &str) -> Result<qrcode::EcLevel, String> {
@@ -166,6 +168,16 @@ pub fn render_matrix_core(payload: &str, level: &str) -> Result<String, String> 
     Ok(out)
 }
 
+
+/// Barcode as "modules;bits" ('1' = bar). `format` is "code128" or "ean13".
+pub fn render_barcode_core(format: &str, value: &str) -> Result<String, String> {
+    match format.trim().to_ascii_lowercase().as_str() {
+        "code128" | "128" => barcode::code128(value),
+        "ean13" | "ean-13" | "ean" => barcode::ean13(value),
+        other => Err(format!("unsupported barcode format: {other}")),
+    }
+}
+
 #[wasm_bindgen]
 pub fn payload_text(text: &str) -> String {
     payload_text_core(text)
@@ -194,6 +206,12 @@ pub fn render_svg(payload: &str, level: &str, dark: &str, light: &str) -> Result
 #[wasm_bindgen]
 pub fn render_matrix(payload: &str, level: &str) -> Result<String, JsError> {
     render_matrix_core(payload, level).map_err(|e| JsError::new(&e))
+}
+
+
+#[wasm_bindgen]
+pub fn render_barcode(format: &str, value: &str) -> Result<String, JsError> {
+    render_barcode_core(format, value).map_err(|e| JsError::new(&e))
 }
 
 #[cfg(test)]
@@ -264,5 +282,12 @@ mod tests {
         assert!(render_matrix_core("   ", "M").is_err());
         assert!(render_svg_core("", "M", "#000", "#fff").is_err());
         assert!(ec_level("Z").is_err());
+    }
+
+    #[test]
+    fn barcode_core_dispatch() {
+        assert!(render_barcode_core("code128", "HELLO-123").is_ok());
+        assert!(render_barcode_core("EAN-13", "590123412345").is_ok());
+        assert!(render_barcode_core("qr", "x").is_err());
     }
 }
