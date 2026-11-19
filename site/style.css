@@ -25,7 +25,7 @@ body {
 
 header { text-align: center; max-width: 640px; }
 h1 { margin: 8px 0 4px; font-size: 2rem; letter-spacing: 0.5px; }
-.mark { color: var(--accent); }
+.logo { border-radius: 9px; vertical-align: -7px; margin-right: 8px; }
 .tagline { color: var(--muted); margin: 0 0 24px; line-height: 1.5; }
 
 main {
