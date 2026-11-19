@@ -146,3 +146,29 @@ input[type="range"] { width: 100%; margin-top: 8px; accent-color: var(--accent);
 
 footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; text-align: center; }
 footer a { color: var(--accent); }
+
+/* Barcode preview keeps natural width */
+.preview svg { max-width: 100%; height: auto; }
+
+/* Print: only the print area */
+#print-area { display: none; }
+@media print {
+  body { background: #fff; padding: 0; }
+  header, main, footer { display: none; }
+  #print-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px;
+  }
+  #print-area svg { max-width: 90vw; max-height: 70vh; }
+  #print-area p {
+    font-family: ui-monospace, monospace;
+    font-size: 10px;
+    color: #333;
+    word-break: break-all;
+    max-width: 90vw;
+    margin: 0;
+  }
+}
