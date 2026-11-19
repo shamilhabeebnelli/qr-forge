@@ -165,9 +165,9 @@ const EAN_PARITY: [&str; 10] = [
     "LGGLGL",
 ];
 
-fn to_result(patterns: Vec<&str>) -> String {
+fn to_result(patterns: Vec<&str>, label: String) -> String {
     let bits: String = patterns.concat();
-    format!("{};{}", bits.len(), bits)
+    format!("{};{};{}", bits.len(), bits, label)
 }
 
 /// Code 128, subset B (printable ASCII 0x20-0x7E).
@@ -198,7 +198,10 @@ pub fn code128(text: &str) -> Result<String, String> {
         % 103;
     values.push(checksum);
     values.push(106); // Stop
-    Ok(to_result(values.iter().map(|v| CODE128_PATTERNS[*v]).collect()))
+    Ok(to_result(
+        values.iter().map(|v| CODE128_PATTERNS[*v]).collect(),
+        text.to_string(),
+    ))
 }
 
 /// EAN-13 checksum digit for the first 12 digits.
@@ -246,7 +249,8 @@ pub fn ean13(input: &str) -> Result<String, String> {
         parts.push(EAN_R[*d as usize]);
     }
     parts.push("101"); // right guard
-    Ok(to_result(parts))
+    let label: String = digits.iter().map(|d| (b'0' + d) as char).collect();
+    Ok(to_result(parts, label))
 }
 
 #[cfg(test)]
@@ -257,9 +261,11 @@ mod tests {
     fn ean13_appends_check_digit() {
         // Wikipedia's worked example: 590123412345 with check digit 7.
         let out = ean13("590123412345").unwrap();
-        let (modules, bits) = out.split_once(';').unwrap();
+        let (modules, rest) = out.split_once(';').unwrap();
+        let (bits, label) = rest.rsplit_once(';').unwrap();
         assert_eq!(modules, "95");
         assert_eq!(bits.len(), 95);
+        assert_eq!(label, "5901234123457");
         assert!(bits.starts_with("101") && bits.ends_with("101"));
         assert_eq!(&bits[45..50], "01010");
     }
@@ -282,8 +288,10 @@ mod tests {
         // "HI": Start B(104) H(40) I(41) checksum stop.
         // checksum = (104 + 1*40 + 2*41) % 103 = 226 % 103 = 20
         let out = code128("HI").unwrap();
-        let (modules, bits) = out.split_once(';').unwrap();
+        let (modules, rest) = out.split_once(';').unwrap();
+        let (bits, label) = rest.rsplit_once(';').unwrap();
         assert_eq!(modules.parse::<usize>().unwrap(), bits.len());
+        assert_eq!(label, "HI");
         // 5 symbols x 11 + final 2 of stop's 13 => 11*4 + 13 = 57
         assert_eq!(bits.len(), 4 * 11 + 13);
         assert!(bits.starts_with(CODE128_PATTERNS[104]));
