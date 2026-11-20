@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="site/logo.svg" alt="qrcodegenerator logo" width="120" height="120">
+</p>
+
 # qrcodegenerator
 
 Fast, private QR code generator that runs **entirely in the browser**. The QR
