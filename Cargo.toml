@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 description = "Fast, private, client-side QR code generator built with Rust and WebAssembly"
-repository = "https://github.com/shamilhabeebnelli/qr-forge"
+repository = "https://github.com/shamilhabeebnelli/qrcodegenerator"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
